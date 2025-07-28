@@ -1,0 +1,12 @@
+[
+  {
+    "auto_captcha": false,
+    "cookie_based_login_check": true,
+    "window_size": [],
+    "headless_bool": false,
+    "output_file": "data.json",
+    "cookie_login": true,
+    "group_scrape_link": "https://www.facebook.com/groups/421208944706635/?sorting_setting=CHRONOLOGICAL",
+    "debug": false
+  }
+]

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Enso - Shaping Digital Futures</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-bg: #0F0F0F; /* Near black */
+            --color-text: #E0E0E0; /* Light gray */
+            --color-primary: #FFFFFF; /* Pure White for high contrast */
+            --color-accent: #4A90E2; /* A bright, modern blue - can be changed */
+            --font-heading: 'Syne', sans-serif;
+            --font-body: 'Manrope', sans-serif;
+            --container-width: 1400px;
+            --spacing-unit: 1rem; /* 16px */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            /* Lenis will handle smooth scroll */
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            cursor: none; /* Prepare for custom cursor */
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1);
+            transition: width 0.3s ease, height 0.3s ease, transform 0.3s ease, background-color 0.3s ease, opacity 0.3s ease;
+            z-index: 9999;
+            mix-blend-mode: difference; 
+        }
+
+        #cursor.hover-link {
+            transform: translate(-50%, -50%) scale(3);
+            background-color: var(--color-accent);
+        }
+        #cursor.hover-image {
+            transform: translate(-50%, -50%) scale(5);
+            background-color: rgba(255,255,255,0.3);
+            mix-blend-mode: normal;
+        }
+        #cursor-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: var(--color-bg);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+        #cursor.view-project #cursor-text {
+            opacity: 1;
+        }
+
+
+        .container {
+            width: 90%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 2) 0;
+            z-index: 1000;
+            transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+        }
+        .site-header.scrolled {
+            background-color: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: calc(var(--spacing-unit) * 1.8);
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        .logo span { color: var(--color-accent); } /* Accent on part of logo */
+
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+        }
+
+        .main-nav li {
+            margin-left: calc(var(--spacing-unit) * 2.5);
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500;
+            font-size: calc(var(--spacing-unit) * 0.95);
+            position: relative;
+            padding: calc(var(--spacing-unit) * 0.5) 0;
+            transition: color 0.3s ease;
+        }
+        .main-nav a:hover {
+            color: var(--color-primary);
+        }
+        .main-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 1px;
+            background-color: var(--color-accent);
+            transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .main-nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: 120px; /* Account for fixed header */
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: clamp(3rem, 10vw, 8rem); /* Responsive & Large */
+            font-weight: 800;
+            line-height: 1;
+            color: var(--color-primary);
+            margin: 0;
+        }
+        .hero-title .line {
+            display: block;
+            overflow: hidden; /* For text reveal */
+        }
+        .hero-title .line span { /* The actual text to animate */
+            display: block;
+            transform: translateY(110%); /* Start hidden */
+        }
+
+        .hero-subtitle {
+            font-size: calc(var(--spacing-unit) * 1.3);
+            color: var(--color-text);
+            max-width: 600px;
+            margin-top: calc(var(--spacing-unit) * 2);
+            opacity: 0; /* For fade-in after title */
+            transform: translateY(20px);
+        }
+        
+        .hero-background-visual { /* Abstract shapes or lines */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80vw;
+            height: 80vw;
+            max-width: 1000px;
+            max-height: 1000px;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+        .hero-background-visual svg {
+            width: 100%;
+            height: 100%;
+            opacity: 0.08; /* Very subtle */
+            stroke: var(--color-accent);
+            stroke-width: 1;
+            fill: none;
+        }
+
+
+        /* General Section Styling */
+        .section {
+            padding: calc(var(--spacing-unit) * 8) 0;
+            position: relative;
+        }
+        
+        .section-heading {
+            margin-bottom: calc(var(--spacing-unit) * 4);
+            display: flex;
+            align-items: center;
+        }
+        .section-heading .number {
+            font-family: var(--font-heading);
+            font-size: calc(var(--spacing-unit) * 1.2);
+            color: var(--color-accent);
+            margin-right: var(--spacing-unit);
+            font-weight: 700;
+        }
+        .section-heading .title {
+            font-family: var(--font-heading);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        /* About Section - Example of overlapping elements */
+        .about-section {
+            padding-bottom: calc(var(--spacing-unit) * 12); /* Extra padding for overlap */
+        }
+        .about-content {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: calc(var(--spacing-unit) * 5);
+            align-items: flex-start; /* Align to top for varied heights */
+        }
+        .about-text p {
+            font-size: calc(var(--spacing-unit) * 1.15);
+            line-height: 1.8;
+            margin-bottom: calc(var(--spacing-unit) * 1.5);
+            max-width: 550px; /* Constrain text width for readability */
+            opacity: 0; /* For GSAP reveal */
+            transform: translateY(30px);
+        }
+        .about-image-wrapper {
+            position: relative; /* For overlapping effect */
+            margin-top: calc(var(--spacing-unit) * -4); /* Pull up to overlap previous section */
+            opacity: 0; /* For GSAP reveal */
+            transform: translateY(50px);
+        }
+        .about-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .about-image-caption {
+            font-size: calc(var(--spacing-unit) * 0.85);
+            color: var(--color-text);
+            opacity: 0.7;
+            margin-top: var(--spacing-unit);
+            text-align: right;
+        }
+
+        /* Work Section - Horizontal Scroll or Grid */
+        .work-section {
+            background-color: #141414; /* Slightly different bg */
+            overflow: hidden; /* Important for horizontal scroll effect if used */
+        }
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: calc(var(--spacing-unit) * 3);
+        }
+        .work-item {
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden; /* For image zoom effect */
+            opacity: 0; /* For GSAP stagger */
+            transform: translateY(50px);
+        }
+        .work-item-image-wrapper {
+            width: 100%;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background-color: #222; /* Placeholder while image loads */
+        }
+        .work-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .work-item:hover img {
+            transform: scale(1.05);
+        }
+        .work-item-content {
+            padding: calc(var(--spacing-unit) * 1.5) 0;
+        }
+        .work-item h3 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: calc(var(--spacing-unit) * 1.5);
+            color: var(--color-primary);
+            margin-bottom: calc(var(--spacing-unit) * 0.5);
+            transition: color 0.3s ease;
+        }
+        .work-item:hover h3 {
+            color: var(--color-accent);
+        }
+        .work-item p {
+            font-size: calc(var(--spacing-unit) * 0.95);
+            color: var(--color-text);
+            opacity: 0.8;
+        }
+        .work-item-arrow { /* Small decorative arrow */
+            position: absolute;
+            bottom: calc(var(--spacing-unit) * 1.5);
+            right: 0;
+            font-size: calc(var(--spacing-unit) * 1.5);
+            color: var(--color-primary);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+        .work-item:hover .work-item-arrow {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        /* Marquee Text */
+        .marquee {
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            padding: calc(var(--spacing-unit) * 1.5) 0;
+            white-space: nowrap;
+            margin: calc(var(--spacing-unit) * 6) 0;
+            border-top: 1px solid var(--color-accent);
+            border-bottom: 1px solid var(--color-accent);
+        }
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%; /* Start off-screen */
+            animation: marquee 30s linear infinite;
+            font-size: calc(var(--spacing-unit) * 2);
+            font-family: var(--font-heading);
+            font-weight: 700;
+        }
+        .marquee-content span {
+            margin: 0 calc(var(--spacing-unit) * 3);
+            font-style: italic;
+            opacity: 0.8;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+
+        /* Contact Section */
+        .contact-section {
+            text-align: center;
+        }
+        .contact-section .section-heading {
+            justify-content: center;
+        }
+        .contact-intro {
+            font-size: calc(var(--spacing-unit) * 1.2);
+            max-width: 600px;
+            margin: 0 auto calc(var(--spacing-unit) * 3) auto;
+            opacity: 0.8;
+        }
+        .contact-email-link {
+            font-family: var(--font-heading);
+            font-size: clamp(1.8rem, 5vw, 4rem);
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            position: relative;
+            display: inline-block;
+            padding-bottom: calc(var(--spacing-unit) * 0.5);
+            transition: color 0.3s ease;
+        }
+        .contact-email-link:hover {
+            color: var(--color-accent);
+        }
+        .contact-email-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--color-accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .contact-email-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+
+        /* Footer */
+        .site-footer {
+            padding: calc(var(--spacing-unit) * 4) 0 calc(var(--spacing-unit) * 2) 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-unit);
+        }
+        .footer-content p, .footer-links a {
+            font-size: calc(var(--spacing-unit) * 0.85);
+            color: var(--color-text);
+            opacity: 0.7;
+        }
+        .footer-links a {
+            text-decoration: none;
+            margin-left: var(--spacing-unit);
+            transition: color 0.3s ease, opacity 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: var(--color-primary);
+            opacity: 1;
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+            .about-image-wrapper {
+                margin-top: calc(var(--spacing-unit) * 2);
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-nav { display: none; } /* For simplicity; a real site needs a hamburger menu */
+            .hero-title { font-size: clamp(2.5rem, 12vw, 5rem); }
+            .footer-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .footer-links { margin-top: var(--spacing-unit); }
+            .footer-links a { margin: 0 calc(var(--spacing-unit) * 0.5); }
+        }
+        
+        /* Utility: For elements revealed by GSAP */
+        .g-fade-in {
+            opacity: 0;
+        }
+        .g-slide-up {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="cursor"><span id="cursor-text">View</span></div>
+
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="#hero" class="logo data-cursor-link">EN<span>SO</span></a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#about" class="data-cursor-link">About</a></li>
+                    <li><a href="#work" class="data-cursor-link">Work</a></li>
+                    <li><a href="#contact" class="data-cursor-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content"> {/* Wrapper for Lenis */}
+        <section id="hero" class="hero">
+            <div class="container hero-content">
+                <h1 class="hero-title">
+                    <span class="line"><span>Shaping</span></span>
+                    <span class="line"><span>Digital</span></span>
+                    <span class="line"><span>Futures.</span></span>
+                </h1>
+                <p class="hero-subtitle">Studio Enso is a creative collective crafting immersive and intelligent digital experiences that resonate, inspire, and drive results.</p>
+            </div>
+            <div class="hero-background-visual">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                    <!-- Example: simple animated lines or abstract shapes -->
+                    <circle cx="50" cy="50" r="40" stroke-dasharray="5 5" />
+                    <line x1="10" y1="10" x2="90" y2="90" stroke-dasharray="10 2" />
+                    <line x1="10" y1="90" x2="90" y2="10" stroke-dasharray="2 10" />
+                </svg>
+            </div>
+        </section>
+
+        <section id="about" class="section about-section">
+            <div class="container">
+                <div class="section-heading g-slide-up">
+                    <span class="number">01</span>
+                    <h2 class="title">Our Ethos</h2>
+                </div>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p data-g-reveal>We believe in the transformative power of design. At Enso, art meets algorithm, and intuition guides innovation. Our process is deeply collaborative, merging your vision with our expertise to forge digital solutions that are not only beautiful but also strategically sound and profoundly human-centric.</p>
+                        <p data-g-reveal>Driven by curiosity and a passion for excellence, we explore the frontiers of technology to deliver experiences that captivate users and elevate brands. We're not just building websites or apps; we're architecting the future of interaction.</p>
+                    </div>
+                    <div class="about-image-wrapper data-cursor-image" data-g-reveal>
+                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" alt="Abstract team working or creative process" class="about-image">
+                        <p class="about-image-caption">Collaboration at the heart of creation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="marquee">
+            <div class="marquee-content">
+                <span>Design Thinking</span> • <span>Digital Innovation</span> • <span>User Experience</span> • <span>Brand Storytelling</span> • <span>Technological Craft</span> • <span>Design Thinking</span> • <span>Digital Innovation</span> • <span>User Experience</span>
+            </div>
+        </div>
+
+        <section id="work" class="section work-section">
+            <div class="container">
+                <div class="section-heading g-slide-up">
+                    <span class="number">02</span>
+                    <h2 class="title">Selected Works</h2>
+                </div>
+                <div class="work-grid">
+                    <a href="#" class="work-item data-cursor-project">
+                        <div class="work-item-image-wrapper">
+                            <img src="https://images.unsplash.com/photo-1604079628040-94301bb21b91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Project Aura">
+                        </div>
+                        <div class="work-item-content">
+                            <h3>Project Aura</h3>
+                            <p>Immersive e-commerce platform for a luxury fashion brand.</p>
+                        </div>
+                        <span class="work-item-arrow">→</span>
+                    </a>
+                    <a href="#" class="work-item data-cursor-project">
+                        <div class="work-item-image-wrapper">
+                            <img src="https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Project Nova">
+                        </div>
+                        <div class="work-item-content">
+                            <h3>Nova Interactive</h3>
+                            <p>Data visualization and storytelling for a research institute.</p>
+                        </div>
+                        <span class="work-item-arrow">→</span>
+                    </a>
+                    <a href="#" class="work-item data-cursor-project">
+                        <div class="work-item-image-wrapper">
+                            <img src="https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Project Cygnus">
+                        </div>
+                        <div class="work-item-content">
+                            <h3>Cygnus Mobile</h3>
+                            <p>Next-generation wellness application with AI integration.</p>
+                        </div>
+                        <span class="work-item-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section contact-section">
+            <div class="container">
+                <div class="section-heading g-slide-up">
+                    <span class="number">03</span>
+                    <h2 class="title">Let's Talk</h2>
+                </div>
+                <p class="contact-intro g-fade-in">Have a project in mind, a question, or just want to connect? We're always open to new conversations and collaborations.</p>
+                <a href="mailto:hello@studioenso.design" class="contact-email-link data-cursor-link g-fade-in">hello@studioenso.design</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-content">
+            <p>© <span id="currentYear"></span> Studio Enso. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#" class="data-cursor-link">Privacy</a>
+                <a href="#" class="data-cursor-link">Terms</a>
+                <a href="#" class="data-cursor-link">X (Twitter)</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.27/bundled/lenis.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Lenis Smooth Scroll
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smoothTouch: true,
+            });
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Custom Cursor
+            const cursor = document.getElementById('cursor');
+            const cursorText = document.getElementById('cursor-text');
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+            const speed = 0.1; // Adjust for smoothness
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            function animateCursor() {
+                let distX = mouseX - cursorX;
+                let distY = mouseY - cursorY;
+                cursorX = cursorX + (distX * speed);
+                cursorY = cursorY + (distY * speed);
+                cursor.style.left = cursorX + 'px';
+                cursor.style.top = cursorY + 'px';
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+            
+            document.querySelectorAll('[data-cursor-link]').forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('hover-link'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('hover-link'));
+            });
+            document.querySelectorAll('[data-cursor-image]').forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('hover-image'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('hover-image'));
+            });
+            document.querySelectorAll('[data-cursor-project]').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.classList.add('hover-image', 'view-project');
+                    cursorText.textContent = 'View';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hover-image', 'view-project');
+                     cursorText.textContent = 'View'; // Keep or clear as preferred
+                });
+            });
+
+
+            // Header Scroll Effect
+            const header = document.querySelector('.site-header');
+            ScrollTrigger.create({
+                start: "top top",
+                end: 99999,
+                onUpdate: (self) => {
+                    if (self.direction === -1 && self.progress > 0) { // Scrolling Up
+                        header.classList.add('scrolled');
+                    } else if (self.direction === 1 && self.progress > 0.01) { // Scrolling Down
+                         header.classList.add('scrolled');
+                    } else if (self.progress === 0) {
+                        header.classList.remove('scrolled');
+                    }
+                }
+            });
+
+
+            // Hero Animations
+            const heroTitleLines = gsap.utils.toArray('.hero-title .line span');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            
+            const tlHero = gsap.timeline({ delay: 0.2 });
+            tlHero.to(heroTitleLines, {
+                y: 0,
+                duration: 1.2,
+                stagger: 0.15,
+                ease: 'power4.out'
+            })
+            .to(heroSubtitle, {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'power2.out'
+            }, "-=0.6");
+
+            // Mouse move effect for hero background (subtle)
+            const heroBg = document.querySelector('.hero-background-visual svg');
+            if (heroBg) {
+                document.querySelector('.hero').addEventListener('mousemove', (e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const moveX = (x / rect.width - 0.5) * 30; // Max 15px move
+                    const moveY = (y / rect.height - 0.5) * 30; // Max 15px move
+                    gsap.to(heroBg, {
+                        x: moveX,
+                        y: moveY,
+                        rotation: moveX * 0.1, // slight rotation
+                        duration: 0.8,
+                        ease: 'power1.out'
+                    });
+                });
+            }
+
+
+            // General Scroll-Triggered Animations
+            gsap.utils.toArray('.g-slide-up').forEach(el => {
+                gsap.fromTo(el, 
+                    { opacity: 0, y: 40 },
+                    { 
+                        opacity: 1, 
+                        y: 0, 
+                        duration: 1, 
+                        ease: 'power2.out',
+                        scrollTrigger: {
+                            trigger: el,
+                            start: 'top 85%', // When top of element is 85% from top of viewport
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+            
+            gsap.utils.toArray('.g-fade-in').forEach(el => {
+                gsap.fromTo(el, 
+                    { opacity: 0 },
+                    { 
+                        opacity: 1, 
+                        duration: 1.2, 
+                        ease: 'power2.inOut',
+                        scrollTrigger: {
+                            trigger: el,
+                            start: 'top 85%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+            
+            // Specific animation for about section text paragraphs (staggered)
+            const aboutTexts = gsap.utils.toArray('.about-text p[data-g-reveal]');
+            if (aboutTexts.length > 0) {
+                 gsap.fromTo(aboutTexts,
+                    { opacity:0, y: 30 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        stagger: 0.2,
+                        ease: 'power2.out',
+                        scrollTrigger: {
+                            trigger: '.about-text',
+                            start: 'top 70%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            }
+            // About image reveal
+            const aboutImage = document.querySelector('.about-image-wrapper[data-g-reveal]');
+            if (aboutImage) {
+                gsap.fromTo(aboutImage,
+                    { opacity:0, y: 50, scale: 0.95 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 1,
+                        ease: 'expo.out',
+                        scrollTrigger: {
+                            trigger: aboutImage,
+                            start: 'top 80%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            }
+
+            // Work Items Staggered Animation
+            const workItems = gsap.utils.toArray('.work-item');
+            if (workItems.length > 0) {
+                gsap.fromTo(workItems, 
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        stagger: 0.15,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: '.work-grid',
+                            start: 'top 75%',
+                            toggleActions: 'play none none none',
+                        }
+                    }
+                );
+            }
+            
+
+            // Set current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Smooth scroll for nav links (Lenis handles general scroll, this is for anchor jumps)
+            document.querySelectorAll('.main-nav a[href^="#"], .logo[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    lenis.scrollTo(targetId, {
+                         offset: -80, // Adjust offset for fixed header
+                         duration: 1.5 
+                    });
+                });
+            });
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>
